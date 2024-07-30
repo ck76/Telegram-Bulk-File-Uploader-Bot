@@ -109,7 +109,6 @@ async def send_media_group_to_chat(chat_id: int, media_group, retries=3):
     return False
 
 
-# 主函数
 async def main():
     # sqlite connection
     conn = sqlite3.connect('telegram.db')
@@ -145,9 +144,9 @@ async def main():
             # sort files by name, from small to large, alphabetical order a to z
             files.sort()
 
-            # filter out files that have not been uploaded(media_uploaded == false)
+            # filter out files that have not been uploaded
             not_uploaded_images = [photo for photo in files if not c.execute(
-                f"SELECT * FROM {table_name} WHERE file_name = '{photo}' AND media_uploaded = 0").fetchone()]
+                f"SELECT * FROM {table_name} WHERE file_name = '{photo}' AND media_uploaded = 1").fetchone()]
             logger.info(f"not_uploaded_images: {not_uploaded_images}")
             for i in range(0, len(not_uploaded_images), batch_size):
                 batch = not_uploaded_images[i:i + batch_size]
@@ -155,32 +154,40 @@ async def main():
                 logger.info(f"Batch: {batch}")
                 media_group = [InputMediaPhoto(open(os.path.join(file_directory, photo), 'rb')) for photo in batch]
                 if await send_media_group_to_chat(chat_id, media_group):
+                    logger.info(
+                        f"Successfully sent media group to chat {chat} with chat_id {chat_id}, media_group: {media_group}")
                     # If success, update record in table, if record not exists, insert record into table, if record exists, update media_uploaded to True
                     for img_i in batch:
                         if c.execute(f"SELECT * FROM {table_name} WHERE file_name = '{img_i}'").fetchone() is None:
+                            logger.info(f"Inserting record into table {table_name} with file_name {img_i}")
                             c.execute(
                                 f"INSERT INTO {table_name} (file_name, media_uploaded, document_uploaded) VALUES ('{img_i}', 1, 0)")
                         else:
+                            logger.info(f"Updating record in table {table_name} with file_name {img_i}")
                             c.execute(
                                 f"UPDATE {table_name} SET media_uploaded = 1 WHERE file_name = '{img_i}'")
                     conn.commit()
                 await asyncio.sleep(5)
 
-            # filter out files that have not been uploaded(document_uploaded == false)
+            # filter out files that have not been uploaded
             not_uploaded_documents = [photo for photo in files if not c.execute(
-                f"SELECT * FROM {table_name} WHERE file_name = '{photo}' AND document_uploaded = 0").fetchone()]
+                f"SELECT * FROM {table_name} WHERE file_name = '{photo}' AND document_uploaded = 1").fetchone()]
             logger.info(f"not_uploaded_documents: {not_uploaded_documents}")
             for i in range(0, len(not_uploaded_documents), batch_size):
+                batch = not_uploaded_documents[i:i + batch_size]
                 logger.info(f"Sending batch {i // batch_size + 1} of {len(not_uploaded_documents) // batch_size + 1}")
                 logger.info(f"Batch: {batch}")
-                batch = not_uploaded_documents[i:i + batch_size]
                 media_group = [InputMediaDocument(open(os.path.join(file_directory, photo), 'rb')) for photo in batch]
                 if await send_media_group_to_chat(chat_id, media_group):
+                    logger.info(
+                        f"Successfully sent media group to chat {chat} with chat_id {chat_id}, media_group: {media_group}")
                     for doc_i in batch:
                         if c.execute(f"SELECT * FROM {table_name} WHERE file_name = '{doc_i}'").fetchone() is None:
+                            logger.info(f"Inserting record into table {table_name} with file_name {doc_i}")
                             c.execute(
                                 f"INSERT INTO {table_name} (file_name, media_uploaded, document_uploaded) VALUES ('{doc_i}', 0, 1)")
                         else:
+                            logger.info(f"Updating record in table {table_name} with file_name {doc_i}")
                             c.execute(
                                 f"UPDATE {table_name} SET document_uploaded = 1 WHERE file_name = '{doc_i}'")
                     conn.commit()
@@ -193,7 +200,7 @@ async def main():
             # sort files by name, from small to large, alphabetical order a to z
             files.sort()
             not_uploaded_documents = [document for document in files if not c.execute(
-                f"SELECT * FROM {table_name} WHERE file_name = '{document}' AND document_uploaded = 0").fetchone()]
+                f"SELECT * FROM {table_name} WHERE file_name = '{document}' AND document_uploaded = 1").fetchone()]
             logger.info(f"not_uploaded_documents: {not_uploaded_documents}")
             for i in range(0, len(not_uploaded_documents), batch_size):
                 batch = not_uploaded_documents[i:i + batch_size]
@@ -201,11 +208,15 @@ async def main():
                 logger.info(f"Batch: {batch}")
                 media_group = [InputMediaDocument(open(os.path.join(file_directory, photo), 'rb')) for photo in batch]
                 if await send_media_group_to_chat(chat_id, media_group):
+                    logger.info(
+                        f"Successfully sent media group to chat {chat} with chat_id {chat_id}, media_group: {media_group}")
                     for doc_i in batch:
                         if c.execute(f"SELECT * FROM {table_name} WHERE file_name = '{doc_i}'").fetchone() is None:
+                            logger.info(f"Inserting record into table {table_name} with file_name {doc_i}")
                             c.execute(
                                 f"INSERT INTO {table_name} (file_name, media_uploaded, document_uploaded) VALUES ('{doc_i}', 0, 1)")
                         else:
+                            logger.info(f"Updating record in table {table_name} with file_name {doc_i}")
                             c.execute(
                                 f"UPDATE {table_name} SET document_uploaded = 1 WHERE file_name = '{doc_i}'")
                     conn.commit()
