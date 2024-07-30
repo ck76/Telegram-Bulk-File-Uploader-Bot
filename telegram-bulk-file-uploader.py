@@ -153,7 +153,7 @@ async def main():
                 batch = not_uploaded_images[i:i + batch_size]
                 logger.info(f"Sending batch {i // batch_size + 1} of {len(not_uploaded_images) // batch_size + 1}")
                 logger.info(f"Batch: {batch}")
-                media_group = [InputMediaPhoto(open(photo, 'rb')) for photo in batch]
+                media_group = [InputMediaPhoto(open(os.path.join(file_directory, photo), 'rb')) for photo in batch]
                 if await send_media_group_to_chat(chat_id, media_group):
                     # If success, update record in table, if record not exists, insert record into table, if record exists, update media_uploaded to True
                     for img_i in batch:
@@ -174,7 +174,7 @@ async def main():
                 logger.info(f"Sending batch {i // batch_size + 1} of {len(not_uploaded_documents) // batch_size + 1}")
                 logger.info(f"Batch: {batch}")
                 batch = not_uploaded_documents[i:i + batch_size]
-                media_group = [InputMediaDocument(open(photo, 'rb')) for photo in batch]
+                media_group = [InputMediaDocument(open(os.path.join(file_directory, photo), 'rb')) for photo in batch]
                 if await send_media_group_to_chat(chat_id, media_group):
                     for doc_i in batch:
                         if c.execute(f"SELECT * FROM {table_name} WHERE file_name = '{doc_i}'").fetchone() is None:
@@ -199,7 +199,7 @@ async def main():
                 batch = not_uploaded_documents[i:i + batch_size]
                 logger.info(f"Sending batch {i // batch_size + 1} of {len(not_uploaded_documents) // batch_size + 1}")
                 logger.info(f"Batch: {batch}")
-                media_group = [InputMediaDocument(open(photo, 'rb')) for photo in batch]
+                media_group = [InputMediaDocument(open(os.path.join(file_directory, photo), 'rb')) for photo in batch]
                 if await send_media_group_to_chat(chat_id, media_group):
                     for doc_i in batch:
                         if c.execute(f"SELECT * FROM {table_name} WHERE file_name = '{doc_i}'").fetchone() is None:
