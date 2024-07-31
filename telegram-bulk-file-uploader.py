@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 TOKEN = "YOUR_BOT_TOKEN"
 
 root_directory = 'YOUR_ROOT_DIRECTORY'
+table_name_prefix = "telegram_"
 
 # chat_id file_directory key pair
 # ⚠️ image will be sent twice, one for media, one for document, because media type is compressed, document type is not compressed
@@ -125,7 +126,7 @@ async def main():
             logger.error(f"File directory {file_directory} does not exist, skipping...")
             continue
         # use chat_id as table_name
-        table_name = str(chat)
+        table_name = table_name_prefix + str(chat)
         logger.info(
             f"Processing chat {chat} with chat_id {chat_id} and file_directory {file_directory} and file_type {file_type}")
         logger.info(f"Creating table {table_name} if not exists")
