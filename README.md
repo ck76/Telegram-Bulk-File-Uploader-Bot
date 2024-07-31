@@ -15,7 +15,6 @@ This repository contains a Python-based Telegram bot that automates the process 
 ### Prerequisites
 - Python 3.8+
 - Telegram Bot Token (You can create a bot and get the token from BotFather)
-- SQLite3
 
 ### Setup
 

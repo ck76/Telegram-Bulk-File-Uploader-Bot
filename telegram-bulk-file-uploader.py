@@ -1,7 +1,8 @@
+import asyncio
 import logging
 import os
-import asyncio
 import sqlite3
+
 from telegram import Bot, InputMediaDocument, InputMediaPhoto
 from telegram.error import TimedOut, RetryAfter
 
@@ -24,6 +25,7 @@ TOKEN = "YOUR_BOT_TOKEN"
 root_directory = 'YOUR_ROOT_DIRECTORY'
 
 # chat_id file_directory key pair
+# ⚠️ image will be sent twice, one for media, one for document, because media type is compressed, document type is not compressed
 chat_id_file_directory = {
     "test_image": {
         "type": "image",
@@ -110,7 +112,6 @@ async def send_media_group_to_chat(chat_id: int, media_group, retries=3):
 
 
 async def main():
-    # sqlite connection
     conn = sqlite3.connect('telegram.db')
     c = conn.cursor()
 
